@@ -1,0 +1,1393 @@
+<title>사인파 실험대</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,700;1,700&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
+<style>
+  :root {
+    --bg: #E6EAEC;
+    --panel: #F8FAFA;
+    --panel-2: #EEF3F4;
+    --ink: #101A1D;
+    --muted: #596B73;
+    --line: #C9D4D8;
+    --grid: #D9E2E5;
+    --grid-strong: #BCC9CE;
+    --trace: #A96500;
+    --trace-soft: rgba(169, 101, 0, .13);
+    --peak: #BC2F4D;
+    --trough: #2E7D4F;
+    --w1: #3F7195;
+    --w2: #7A5AA0;
+    --accent: #A96500;
+    --focus: #1F5F8B;
+    --shadow: 0 1px 2px rgba(16, 26, 29, .07), 0 14px 28px -22px rgba(16, 26, 29, .5);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0D1316;
+      --panel: #151E22;
+      --panel-2: #111A1D;
+      --ink: #E2EBEE;
+      --muted: #8A9BA2;
+      --line: #27343A;
+      --grid: #1A2429;
+      --grid-strong: #2C3A40;
+      --trace: #F0B53F;
+      --trace-soft: rgba(240, 181, 63, .15);
+      --peak: #F0728C;
+      --trough: #5FCB8E;
+      --w1: #7FB2D6;
+      --w2: #AE93DC;
+      --accent: #F0B53F;
+      --focus: #7FB2D6;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 14px 28px -22px rgba(0, 0, 0, .9);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0D1316;
+    --panel: #151E22;
+    --panel-2: #111A1D;
+    --ink: #E2EBEE;
+    --muted: #8A9BA2;
+    --line: #27343A;
+    --grid: #1A2429;
+    --grid-strong: #2C3A40;
+    --trace: #F0B53F;
+    --trace-soft: rgba(240, 181, 63, .15);
+    --peak: #F0728C;
+    --trough: #5FCB8E;
+    --w1: #7FB2D6;
+    --w2: #AE93DC;
+    --accent: #F0B53F;
+    --focus: #7FB2D6;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 14px 28px -22px rgba(0, 0, 0, .9);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1220px;
+    margin: 0 auto;
+    padding-block: 28px 40px;
+    padding-left: 20px;
+    padding-right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  /* ---------- masthead ---------- */
+  .masthead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px 28px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 18px;
+  }
+
+  .masthead h1 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+  }
+
+  .eyebrow {
+    margin: 0 0 4px;
+    font-family: "Archivo", system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .formula {
+    font-family: "Archivo", Georgia, serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--ink);
+    line-height: 1.5;
+  }
+
+  .formula .sub { font-size: .6em; font-style: normal; vertical-align: -.2em; letter-spacing: .04em; }
+  .formula-note { font-size: 12px; color: var(--muted); margin-top: 3px; max-width: 46ch; }
+  .formula-note b { color: var(--trace); font-weight: 600; }
+
+  /* ---------- layout ---------- */
+  .bench {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 330px;
+    gap: 22px;
+    align-items: start;
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    box-shadow: var(--shadow);
+  }
+
+  /* ---------- scope ---------- */
+  .scope-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 16px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .scope-title {
+    font-family: "Archivo", system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+  .sw-line { width: 16px; border-top: 2px solid var(--muted); flex: none; }
+  .sw-line.w1 { border-top-width: 1.5px; border-color: var(--w1); }
+  .sw-line.w2 { border-top-width: 1.5px; border-top-style: dashed; border-color: var(--w2); }
+  .sw-line.sum { border-top-width: 3px; border-color: var(--trace); }
+  .sw-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+  .sw-dot.peak { background: var(--peak); }
+  .sw-dot.trough { background: var(--trough); }
+
+  #scope {
+    display: block;
+    width: 100%;
+    aspect-ratio: 20 / 9;
+    min-height: 240px;
+  }
+
+  /* ---------- readout strip ---------- */
+  .strip { border-top: 1px solid var(--line); background: var(--panel-2); }
+
+  .strip-top {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    border-bottom: 1px solid var(--line);
+  }
+
+  .cell { padding: 9px 14px; border-right: 1px solid var(--line); min-width: 0; }
+  .cell:last-child { border-right: 0; }
+
+  .cell dt {
+    margin: 0;
+    font-size: 10px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: "Archivo", system-ui, sans-serif;
+    font-weight: 700;
+  }
+
+  .cell dd {
+    margin: 1px 0 0;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .cell dd small { font-size: 11px; font-weight: 400; color: var(--muted); margin-left: 2px; }
+
+  .badge {
+    display: inline-block;
+    font-family: "IBM Plex Sans KR", system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.5;
+    padding: 1px 9px;
+    border-radius: 999px;
+    border: 1px solid currentColor;
+    color: var(--muted);
+  }
+  .badge.tone-peak { color: var(--peak); }
+  .badge.tone-trace { color: var(--trace); }
+  .badge.tone-trough { color: var(--trough); }
+
+  .badge-detail {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--muted);
+    margin-left: 7px;
+    white-space: nowrap;
+  }
+
+  .tablewrap { overflow-x: auto; }
+
+  table.waves {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  table.waves th {
+    font-family: "Archivo", system-ui, sans-serif;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: right;
+    padding: 6px 14px 5px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  table.waves th:first-child, table.waves td:first-child { text-align: left; }
+
+  table.waves td {
+    padding: 6px 14px;
+    text-align: right;
+    color: var(--ink);
+  }
+
+  table.waves tbody tr + tr td { border-top: 1px solid var(--line); }
+
+  .wname {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: "IBM Plex Sans KR", system-ui, sans-serif;
+    font-weight: 500;
+    color: var(--muted);
+  }
+  .wname i { width: 3px; height: 13px; border-radius: 2px; flex: none; }
+  .wname.n1 i { background: var(--w1); }
+  .wname.n2 i { background: var(--w2); }
+
+  tr.is-off td { opacity: .38; }
+
+  /* ---------- controls ---------- */
+  .rail { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; align-content: start; }
+
+  .rail section { padding: 15px 16px 17px; }
+
+  .rail h2 {
+    margin: 0 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "Archivo", system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .rail h2 .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+  .rail h2 .dot.w1 { background: var(--w1); }
+  .rail h2 .dot.w2 { background: var(--w2); }
+
+  .mini-toggle {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: "IBM Plex Sans KR", system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .mini-toggle input { accent-color: var(--accent); width: 14px; height: 14px; margin: 0; }
+
+  .wave-body { transition: opacity .15s ease; }
+  @media (prefers-reduced-motion: reduce) { .wave-body { transition: none; } }
+  .is-off .wave-body { opacity: .4; }
+
+  .ctl + .ctl { margin-top: 16px; }
+
+  .ctl-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .ctl-name { font-size: 13px; font-weight: 500; }
+  .ctl-name i {
+    font-family: "Archivo", Georgia, serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--accent);
+    margin-right: 6px;
+  }
+  .ctl-name i .sub { font-size: .6em; font-style: normal; vertical-align: -.2em; }
+
+  .ctl-val {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .ctl-val small { color: var(--muted); font-weight: 400; font-size: 11px; margin-left: 2px; }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 22px;
+    margin: 0;
+    background: transparent;
+    cursor: ew-resize;
+    display: block;
+  }
+
+  input[type="range"]::-webkit-slider-runnable-track { height: 3px; border-radius: 2px; background: var(--line); }
+  input[type="range"]::-moz-range-track { height: 3px; border-radius: 2px; background: var(--line); }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 17px;
+    height: 17px;
+    margin-top: -7px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 3px solid var(--panel);
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 3px solid var(--panel);
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+
+  [data-wave="1"] input[type="range"]::-webkit-slider-thumb { background: var(--w1); box-shadow: 0 0 0 1px var(--w1); }
+  [data-wave="1"] input[type="range"]::-moz-range-thumb { background: var(--w1); box-shadow: 0 0 0 1px var(--w1); }
+  [data-wave="2"] input[type="range"]::-webkit-slider-thumb { background: var(--w2); box-shadow: 0 0 0 1px var(--w2); }
+  [data-wave="2"] input[type="range"]::-moz-range-thumb { background: var(--w2); box-shadow: 0 0 0 1px var(--w2); }
+
+  [data-wave="1"] .ctl-name i { color: var(--w1); }
+  [data-wave="2"] .ctl-name i { color: var(--w2); }
+
+  input[type="range"]:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 3px; }
+  input[type="range"]:disabled { cursor: default; }
+
+  .scale {
+    display: flex;
+    justify-content: space-between;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  /* ---------- buttons ---------- */
+  .transport { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+  button {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 7px 13px;
+    cursor: pointer;
+  }
+  button:hover:not(:disabled) { border-color: var(--accent); }
+  button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  button:disabled { cursor: default; }
+
+  #play { background: var(--accent); border-color: var(--accent); color: var(--panel); min-width: 92px; font-weight: 700; }
+  #play:hover { filter: brightness(1.06); }
+
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 3px; overflow: hidden; }
+  .seg button {
+    border: 0;
+    border-radius: 0;
+    padding: 7px 9px;
+    background: transparent;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 11px;
+  }
+  .seg button + button { border-left: 1px solid var(--line); }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--panel); }
+  .transport .seg { margin-left: auto; }
+
+  .seg-dir { display: flex; width: 100%; }
+  .seg-dir button { flex: 1; font-family: "IBM Plex Sans KR", system-ui, sans-serif; font-size: 12px; }
+  [data-wave="2"] .seg-dir button[aria-pressed="true"] { background: var(--w2); color: var(--panel); }
+
+  .toggle {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .toggle input { accent-color: var(--accent); width: 15px; height: 15px; margin: 0; }
+  .toggle input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  /* ---------- phasor ---------- */
+  .phasor-wrap { display: flex; flex-direction: column; align-items: center; gap: 9px; }
+  #phasor { display: block; width: 100%; max-width: 190px; aspect-ratio: 1 / 1; }
+
+  .phasor-read {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.7;
+    margin: 0;
+  }
+  .phasor-read b { color: var(--ink); font-weight: 600; }
+  .phasor-read .th1 { color: var(--w1); }
+  .phasor-read .th2 { color: var(--w2); }
+
+  .caption {
+    font-size: 11.5px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin: 0;
+    padding-top: 11px;
+    border-top: 1px solid var(--line);
+    text-align: left;
+    width: 100%;
+  }
+
+  .hint {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.65;
+    margin: 13px 0 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+
+  footer {
+    font-size: 12px;
+    color: var(--muted);
+    border-top: 1px solid var(--line);
+    padding-top: 14px;
+  }
+  footer code {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 11px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    padding: 1px 5px;
+  }
+
+  @media (max-width: 960px) {
+    .bench { grid-template-columns: minmax(0, 1fr); }
+    .rail { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+    .masthead { align-items: flex-start; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <div>
+      <p class="eyebrow">Superposition of Two Waves</p>
+      <h1>사인파 실험대</h1>
+    </div>
+    <div>
+      <div class="formula">
+        <i>y</i><span class="sub">n</span> = <i>A</i><span class="sub">n</span> sin(<i>ω</i><span class="sub">n</span><i>t</i> ∓ <i>k</i><span class="sub">n</span><i>x</i> + <i>φ</i><span class="sub">n</span>),
+        &nbsp;<i>y</i> = <i>y</i><span class="sub">1</span> + <i>y</i><span class="sub">2</span>
+      </div>
+      <p class="formula-note">∓ 는 진행 방향 — 오른쪽이면 <b>−kx</b>, 왼쪽이면 <b>+kx</b>. 파원 <b>x = 0</b>에서 각 파동은 <i>A</i>·sin(<i>ωt</i> + <i>φ</i>)로 진동합니다.</p>
+    </div>
+  </header>
+
+  <div class="bench">
+    <!-- ================= scope ================= -->
+    <div class="panel">
+      <div class="scope-head">
+        <span class="scope-title">Wave Display · 8 m 구간</span>
+        <div class="legend">
+          <span><i class="sw-line w1"></i>파동 1</span>
+          <span><i class="sw-line w2"></i>파동 2</span>
+          <span><i class="sw-line sum"></i>합성파</span>
+          <span><i class="sw-dot peak"></i>마루</span>
+          <span><i class="sw-dot trough"></i>골</span>
+        </div>
+      </div>
+
+      <canvas id="scope" aria-label="두 진행파와 그 합성파 그래프. 합성파의 마루와 골에 표식이 표시됩니다."></canvas>
+
+      <div class="strip">
+        <dl class="strip-top">
+          <div class="cell"><dt>시간 t</dt><dd id="r-t">0.00<small>s</small></dd></div>
+          <div class="cell"><dt>y(0, t)</dt><dd id="r-y">0.00<small>m</small></dd></div>
+          <div class="cell"><dt>중첩 상태</dt><dd><span class="badge" id="r-state">—</span><span class="badge-detail" id="r-state-detail"></span></dd></div>
+        </dl>
+
+        <div class="tablewrap">
+          <table class="waves">
+            <thead>
+              <tr>
+                <th scope="col">파동</th>
+                <th scope="col">ω rad/s</th>
+                <th scope="col">T s</th>
+                <th scope="col">λ m</th>
+                <th scope="col">k rad/m</th>
+                <th scope="col">진행</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr id="row-1">
+                <td><span class="wname n1"><i></i>파동 1</span></td>
+                <td id="w1-om">—</td><td id="w1-T">—</td><td id="w1-lam">—</td><td id="w1-k">—</td><td id="w1-dir">→</td>
+              </tr>
+              <tr id="row-2">
+                <td><span class="wname n2"><i></i>파동 2</span></td>
+                <td id="w2-om">—</td><td id="w2-T">—</td><td id="w2-lam">—</td><td id="w2-k">—</td><td id="w2-dir">→</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= control rail ================= -->
+    <div class="rail">
+      <section class="panel" data-wave="1">
+        <h2><i class="dot w1"></i>파동 1</h2>
+
+        <div class="ctl">
+          <div class="ctl-top">
+            <label class="ctl-name" for="a1"><i>A<span class="sub">1</span></i>진폭</label>
+            <span class="ctl-val" id="v-a1">1.00<small>m</small></span>
+          </div>
+          <input type="range" id="a1" min="0" max="1.5" step="0.01" value="1">
+          <div class="scale"><span>0</span><span>1.5 m</span></div>
+        </div>
+
+        <div class="ctl">
+          <div class="ctl-top">
+            <label class="ctl-name" for="f1"><i>f<span class="sub">1</span></i>진동수</label>
+            <span class="ctl-val" id="v-f1">0.60<small>Hz</small></span>
+          </div>
+          <input type="range" id="f1" min="0.1" max="3" step="0.01" value="0.6">
+          <div class="scale"><span>0.1</span><span>3.0 Hz</span></div>
+        </div>
+
+        <div class="ctl">
+          <div class="ctl-top">
+            <label class="ctl-name" for="p1"><i>φ<span class="sub">1</span></i>위상</label>
+            <span class="ctl-val" id="v-p1">+0.00π<small>rad</small></span>
+          </div>
+          <input type="range" id="p1" min="-1" max="1" step="0.005" value="0">
+          <div class="scale"><span>−π</span><span>0</span><span>+π</span></div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-2" data-wave="2">
+        <h2>
+          <i class="dot w2"></i>파동 2
+          <label class="mini-toggle" for="w2on"><input type="checkbox" id="w2on" checked>켜기</label>
+        </h2>
+
+        <div class="wave-body" id="w2-body">
+          <div class="ctl">
+            <div class="ctl-top">
+              <label class="ctl-name" for="a2"><i>A<span class="sub">2</span></i>진폭</label>
+              <span class="ctl-val" id="v-a2">0.70<small>m</small></span>
+            </div>
+            <input type="range" id="a2" min="0" max="1.5" step="0.01" value="0.7">
+            <div class="scale"><span>0</span><span>1.5 m</span></div>
+          </div>
+
+          <div class="ctl">
+            <div class="ctl-top">
+              <label class="ctl-name" for="f2"><i>f<span class="sub">2</span></i>진동수</label>
+              <span class="ctl-val" id="v-f2">0.90<small>Hz</small></span>
+            </div>
+            <input type="range" id="f2" min="0.1" max="3" step="0.01" value="0.9">
+            <div class="scale"><span>0.1</span><span>3.0 Hz</span></div>
+          </div>
+
+          <div class="ctl">
+            <div class="ctl-top">
+              <label class="ctl-name" for="p2"><i>φ<span class="sub">2</span></i>위상</label>
+              <span class="ctl-val" id="v-p2">+0.00π<small>rad</small></span>
+            </div>
+            <input type="range" id="p2" min="-1" max="1" step="0.005" value="0">
+            <div class="scale"><span>−π</span><span>0</span><span>+π</span></div>
+          </div>
+
+          <div class="ctl">
+            <div class="ctl-top"><span class="ctl-name">진행 방향</span></div>
+            <div class="seg seg-dir" id="dir2" role="group" aria-label="파동 2 진행 방향">
+              <button type="button" data-dir="1" aria-pressed="true">→ 오른쪽</button>
+              <button type="button" data-dir="-1" aria-pressed="false">← 왼쪽</button>
+            </div>
+          </div>
+
+          <p class="hint">파동 1과 같은 <i>A</i>·<i>f</i>에서 방향을 <b>←</b>로 바꾸면 정상파가 됩니다. 마디(node)가 제자리에 멈춰 있는지 보세요.</p>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Transport</h2>
+        <div class="transport">
+          <button id="play" type="button" aria-pressed="true">⏸ 일시정지</button>
+          <button id="reset" type="button">↺ 초기화</button>
+          <div class="seg" id="speed" role="group" aria-label="재생 속도">
+            <button type="button" data-speed="0.25">0.25×</button>
+            <button type="button" data-speed="0.5">0.5×</button>
+            <button type="button" data-speed="1" aria-pressed="true">1×</button>
+            <button type="button" data-speed="2">2×</button>
+          </div>
+        </div>
+        <label class="toggle" for="marks" style="margin-top:14px">
+          <input type="checkbox" id="marks" checked>
+          합성파의 마루·골 강조
+        </label>
+      </section>
+
+      <section class="panel">
+        <h2>위상자 Phasor</h2>
+        <div class="phasor-wrap">
+          <canvas id="phasor" aria-label="두 파동의 회전 벡터와 그 합 벡터. 합 벡터의 세로 성분이 파원의 변위와 같습니다."></canvas>
+          <p class="phasor-read">
+            <span class="th1" id="p-th1">θ₁ 0.00</span> · <span class="th2" id="p-th2">θ₂ 0.00</span> rad<br>
+            합 벡터의 세로 그림자 = <b id="p-proj">0.00 m</b>
+          </p>
+          <p class="caption">두 진동수가 같을 때만 합 벡터의 길이가 일정합니다. 다르면 길이가 주기적으로 늘었다 줄어드는데, 그것이 곧 맥놀이입니다.</p>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <footer>
+    파동 속도는 <code>v = 2.0 m/s</code>로 고정이며 <code>λ = v/f</code>입니다. 슬라이더에 포커스를 두고 <code>←</code> <code>→</code>로 미세 조정, 재생·정지는 <code>Space</code>.
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var TAU = Math.PI * 2;
+  var V = 2.0;          // 파동 속도 (m/s)
+  var XSPAN = 8.0;      // 화면에 담는 공간 폭 (m)
+  var YSTEPS = [1, 1.5, 2, 2.5, 3, 3.5];
+
+  var DEFAULTS = [
+    { A: 1.00, f: 0.60, phi: 0, dir: 1, on: true },
+    { A: 0.70, f: 0.90, phi: 0, dir: 1, on: true }
+  ];
+
+  var W = [
+    { A: 1.00, f: 0.60, phi: 0, dir: 1, on: true },
+    { A: 0.70, f: 0.90, phi: 0, dir: 1, on: true }
+  ];
+  var S = { t: 0, playing: true, speed: 1, marks: true };
+  var yspan = 2.0;      // 세로 표시 범위 ±(m) — syncFromInputs 에서만 갱신
+
+  var scope = document.getElementById('scope');
+  var sctx = scope.getContext('2d');
+  var phasor = document.getElementById('phasor');
+  var pctx = phasor.getContext('2d');
+
+  var size = { w: 600, h: 270 };
+  var psize = { w: 190, h: 190 };
+  var C = {};
+
+  // 샘플 버퍼 — N 이 바뀔 때만 재할당 (프레임마다 새로 만들면 GC 부담)
+  var BUF = { n: -1, y1: null, y2: null, ys: null };
+  function buffers(n) {
+    if (BUF.n !== n) {
+      BUF.n = n;
+      BUF.y1 = new Float64Array(n + 1);
+      BUF.y2 = new Float64Array(n + 1);
+      BUF.ys = new Float64Array(n + 1);
+    }
+    return BUF;
+  }
+
+  var MONO = '"IBM Plex Mono", ui-monospace, monospace';
+  var KR = '"IBM Plex Sans KR", system-ui, sans-serif';
+
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if (reduce.matches) S.playing = false;
+
+  /* ---------- theme tokens ---------- */
+  function readTheme() {
+    var cs = getComputedStyle(document.documentElement);
+    function g(n) { return cs.getPropertyValue(n).trim(); }
+    C = {
+      ink: g('--ink'), muted: g('--muted'), line: g('--line'),
+      grid: g('--grid'), gridStrong: g('--grid-strong'),
+      trace: g('--trace'), traceSoft: g('--trace-soft'),
+      peak: g('--peak'), trough: g('--trough'),
+      w1: g('--w1'), w2: g('--w2'),
+      panel: g('--panel')
+    };
+  }
+  readTheme();
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () { readTheme(); render(); });
+  new MutationObserver(function () { readTheme(); render(); })
+    .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  /* ---------- canvas sizing ---------- */
+  function fit(canvas, ctx, store) {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var r = canvas.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    canvas.width = Math.round(r.width * dpr);
+    canvas.height = Math.round(r.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    store.w = r.width;
+    store.h = r.height;
+  }
+
+  function fitAll() {
+    fit(scope, sctx, size);
+    fit(phasor, pctx, psize);
+  }
+
+  if (window.ResizeObserver) {
+    var ro = new ResizeObserver(function () { fitAll(); render(); });
+    ro.observe(scope);
+    ro.observe(phasor);
+  } else {
+    window.addEventListener('resize', function () { fitAll(); render(); });
+  }
+
+  /* ---------- derived physics ---------- */
+  function derived(w) {
+    var om = TAU * w.f;
+    return { om: om, k: om / V, T: 1 / w.f, lam: V / w.f };
+  }
+
+  function amp2() { return W[1].on ? W[1].A : 0; }
+  function ampTotal() { return W[0].A + amp2(); }
+
+  function pickYspan() {
+    var need = Math.max(ampTotal() * 1.15, 0.55);
+    for (var i = 0; i < YSTEPS.length; i++) if (YSTEPS[i] >= need) return YSTEPS[i];
+    return YSTEPS[YSTEPS.length - 1];
+  }
+
+  /* 위상: ωt − dir·kx + φ  (dir = +1 오른쪽 진행, −1 왼쪽 진행) */
+  function phaseAt(w, d, xm) { return d.om * S.t - w.dir * d.k * xm + w.phi; }
+
+  /* ---------- 중첩 상태 판정 ---------- */
+  function classify() {
+    if (!W[1].on) return { label: '단일 파동', tone: '', detail: '' };
+
+    var df = Math.abs(W[0].f - W[1].f);
+    if (df >= 0.005) {
+      return { label: '맥놀이', tone: 'tone-trace', detail: 'f_b = ' + df.toFixed(2) + ' Hz' };
+    }
+
+    var dA = Math.abs(W[0].A - W[1].A);
+    if (W[0].dir !== W[1].dir) {
+      if (dA < 0.02) return { label: '정상파', tone: 'tone-trough', detail: '마디 간격 ' + (derived(W[0]).lam / 2).toFixed(2) + ' m' };
+      return { label: '부분 정상파', tone: 'tone-trough', detail: 'A₁ ≠ A₂' };
+    }
+
+    var dphi = ((W[1].phi - W[0].phi) % TAU + TAU) % TAU;
+    if (dphi < 0.03 || TAU - dphi < 0.03) {
+      return { label: '보강 간섭', tone: 'tone-peak', detail: '진폭 ' + ampTotal().toFixed(2) + ' m' };
+    }
+    if (Math.abs(dphi - Math.PI) < 0.03) {
+      return dA < 0.02
+        ? { label: '완전 상쇄', tone: '', detail: '합성파 ≈ 0' }
+        : { label: '상쇄 간섭', tone: '', detail: '진폭 ' + Math.abs(W[0].A - W[1].A).toFixed(2) + ' m' };
+    }
+    return { label: '위상차 간섭', tone: '', detail: 'Δφ = ' + (dphi / Math.PI).toFixed(2) + 'π' };
+  }
+
+  /* ---------- 수치 극값 탐색 ---------- */
+  function findExtrema(arr, n, minAbs) {
+    var out = [];
+    for (var i = 1; i < n; i++) {
+      var a = arr[i - 1], b = arr[i], c = arr[i + 1];
+      var isMax = b >= a && b > c;
+      var isMin = b <= a && b < c;
+      if (!isMax && !isMin) continue;
+      if (Math.abs(b) < minAbs) continue;
+
+      // 이웃 3점 포물선 보간 → 서브샘플 위치·높이
+      var den = a - 2 * b + c;
+      var off = den !== 0 ? 0.5 * (a - c) / den : 0;
+      if (!(off > -1 && off < 1)) off = 0;
+      out.push({ i: i + off, y: b - 0.25 * (a - c) * off, max: isMax });
+    }
+    return out;
+  }
+
+  /* ---------- scope ---------- */
+  var M = { l: 46, r: 16, t: 20, b: 28 };
+
+  function drawScope() {
+    var w = size.w, h = size.h;
+    var pw = w - M.l - M.r;
+    var ph = h - M.t - M.b;
+    if (pw < 40 || ph < 40) return;
+
+    var x0 = M.l, y0 = M.t + ph / 2;
+    var sx = pw / XSPAN;          // px per metre (가로)
+    var sy = (ph / 2) / yspan;    // px per metre (세로)
+
+    sctx.clearRect(0, 0, w, h);
+    sctx.fillStyle = C.panel;
+    sctx.fillRect(0, 0, w, h);
+
+    /* --- grid --- */
+    var gstep = yspan <= 2 ? 0.5 : 1.0;
+    sctx.lineWidth = 1;
+    sctx.strokeStyle = C.grid;
+    sctx.beginPath();
+    for (var gx = 0; gx <= XSPAN + 1e-9; gx += 1) {
+      var gpx = Math.round(x0 + gx * sx) + 0.5;
+      sctx.moveTo(gpx, M.t); sctx.lineTo(gpx, M.t + ph);
+    }
+    for (var gy = -yspan; gy <= yspan + 1e-9; gy += gstep) {
+      if (Math.abs(gy) < 1e-9) continue;
+      var gpy = Math.round(y0 - gy * sy) + 0.5;
+      sctx.moveTo(x0, gpy); sctx.lineTo(x0 + pw, gpy);
+    }
+    sctx.stroke();
+
+    /* --- 최대 진폭 포락선 ±(A₁+A₂) --- */
+    var env = ampTotal();
+    if (env > 0.02) {
+      sctx.save();
+      sctx.setLineDash([2, 5]);
+      sctx.strokeStyle = C.gridStrong;
+      sctx.beginPath();
+      sctx.moveTo(x0, y0 - env * sy); sctx.lineTo(x0 + pw, y0 - env * sy);
+      sctx.moveTo(x0, y0 + env * sy); sctx.lineTo(x0 + pw, y0 + env * sy);
+      sctx.stroke();
+      sctx.restore();
+
+      var envLabel = W[1].on ? 'A₁+A₂' : 'A₁';
+      sctx.font = '10px ' + MONO;
+      sctx.fillStyle = C.muted;
+      sctx.textAlign = 'right';
+      sctx.textBaseline = 'bottom';
+      sctx.fillText('+' + envLabel, x0 + pw - 2, y0 - env * sy - 3);
+      sctx.textBaseline = 'top';
+      sctx.fillText('−' + envLabel, x0 + pw - 2, y0 + env * sy + 3);
+    }
+
+    /* --- axes --- */
+    sctx.strokeStyle = C.gridStrong;
+    sctx.lineWidth = 1;
+    sctx.beginPath();
+    sctx.moveTo(x0, Math.round(y0) + 0.5); sctx.lineTo(x0 + pw, Math.round(y0) + 0.5);
+    sctx.moveTo(Math.round(x0) + 0.5, M.t); sctx.lineTo(Math.round(x0) + 0.5, M.t + ph);
+    sctx.stroke();
+
+    /* --- axis labels --- */
+    sctx.font = '10px ' + MONO;
+    sctx.fillStyle = C.muted;
+    sctx.textAlign = 'center';
+    sctx.textBaseline = 'top';
+    for (var lx = 0; lx <= XSPAN + 1e-9; lx += 2) {
+      sctx.fillText(lx.toFixed(0), x0 + lx * sx, M.t + ph + 7);
+    }
+    sctx.textAlign = 'right';
+    sctx.textBaseline = 'middle';
+    sctx.fillText('0', x0 - 8, y0);
+    for (var ly = 1; ly <= yspan + 1e-9; ly += 1) {
+      sctx.fillText('+' + ly, x0 - 8, y0 - ly * sy);
+      sctx.fillText('−' + ly, x0 - 8, y0 + ly * sy);
+    }
+
+    sctx.textAlign = 'left';
+    sctx.textBaseline = 'top';
+    sctx.fillText('x (m) →', x0 + 2, M.t + ph + 7);
+    sctx.save();
+    sctx.translate(13, M.t + ph / 2);
+    sctx.rotate(-Math.PI / 2);
+    sctx.textAlign = 'center';
+    sctx.textBaseline = 'middle';
+    sctx.fillText('y (m)', 0, 0);
+    sctx.restore();
+
+    /* --- 프레임당 한 번만 샘플링 (3× 슈퍼샘플) --- */
+    var N = Math.max(8, Math.round(pw * 3));
+    var d1 = derived(W[0]), d2 = derived(W[1]);
+    var on2 = W[1].on;
+    var buf = buffers(N);
+    var y1 = buf.y1, y2 = buf.y2, ys = buf.ys;
+    var i, xm;
+    for (i = 0; i <= N; i++) {
+      xm = (i / N) * XSPAN;
+      y1[i] = W[0].A * Math.sin(phaseAt(W[0], d1, xm));
+      y2[i] = on2 ? W[1].A * Math.sin(phaseAt(W[1], d2, xm)) : 0;
+      ys[i] = y1[i] + y2[i];
+    }
+
+    /* --- 원본 두 파동 (낮은 위계) --- */
+    if (on2) {
+      strokeSeries(y1, N, x0, y0, pw, sy, C.w1, 1.4, null, 0.85);
+      strokeSeries(y2, N, x0, y0, pw, sy, C.w2, 1.4, [5, 4], 0.85);
+    }
+
+    /* --- 합성파 (주인공) --- */
+    sctx.beginPath();
+    sctx.moveTo(x0, y0);
+    for (i = 0; i <= N; i++) sctx.lineTo(x0 + (i / N) * pw, y0 - ys[i] * sy);
+    sctx.lineTo(x0 + pw, y0);
+    sctx.closePath();
+    sctx.fillStyle = C.traceSoft;
+    sctx.fill();
+
+    strokeSeries(ys, N, x0, y0, pw, sy, C.trace, 2.4, null, 1);
+
+    /* --- 정상파일 때 제자리에 멈춘 마디 (트레이스 위에 얹어야 보인다) --- */
+    if (on2 && classify().label === '정상파') drawNodes(d1, x0, y0, pw, sx);
+
+    /* --- 파원 마커 (x = 0) --- */
+    sctx.beginPath();
+    sctx.arc(x0, y0 - ys[0] * sy, 4.5, 0, TAU);
+    sctx.fillStyle = C.trace;
+    sctx.fill();
+    sctx.strokeStyle = C.panel;
+    sctx.lineWidth = 2;
+    sctx.stroke();
+
+    /* --- 마루·골 --- */
+    if (S.marks) {
+      var minAbs = Math.max(0.02, 0.015 * ampTotal());
+      var ex = findExtrema(ys, N, minAbs);
+      var crests = [], troughs = [];
+      for (i = 0; i < ex.length; i++) {
+        var p = { x: x0 + (ex[i].i / N) * pw, y: y0 - ex[i].y * sy };
+        (ex[i].max ? crests : troughs).push(p);
+      }
+      markExtrema(crests, C.peak, '마루', -1, x0, pw);
+      markExtrema(troughs, C.trough, '골', 1, x0, pw);
+    }
+
+    /* ---- helpers bound to this frame's geometry ---- */
+
+    function drawNodes(d, x0, y0, pw, sx) {
+      // y₁+y₂ = 2A·sin(ωt + (φ₁+φ₂)/2)·cos(kx + (φ₂−φ₁)/2)
+      // 마디: kx + (φ₂−φ₁)/2 = π/2 + nπ
+      var shift = (W[1].phi - W[0].phi) / 2;
+      var n0 = Math.ceil((d.k * 0 + shift - Math.PI / 2) / Math.PI);
+      var n1 = Math.floor((d.k * XSPAN + shift - Math.PI / 2) / Math.PI);
+      if (n1 - n0 > 200) return;
+      var gap = (Math.PI / d.k) * sx;
+
+      sctx.save();
+      sctx.strokeStyle = C.muted;
+      sctx.globalAlpha = 0.55;
+      sctx.lineWidth = 1;
+      sctx.beginPath();
+      var shown = [];
+      for (var n = n0; n <= n1; n++) {
+        var xm = (Math.PI / 2 + n * Math.PI - shift) / d.k;
+        if (xm < 0 || xm > XSPAN) continue;
+        var px = Math.round(x0 + xm * sx) + 0.5;
+        sctx.moveTo(px, y0 - 6); sctx.lineTo(px, y0 + 6);
+        shown.push(px);
+      }
+      sctx.stroke();
+
+      if (gap >= 52) {
+        sctx.globalAlpha = 0.8;
+        sctx.font = '10px ' + KR;
+        sctx.fillStyle = C.muted;
+        sctx.textAlign = 'center';
+        sctx.textBaseline = 'top';
+        for (var j = 0; j < shown.length; j++) {
+          if (shown[j] < x0 + 14 || shown[j] > x0 + pw - 14) continue;
+          sctx.fillText('마디', shown[j], y0 + 8);
+        }
+      }
+      sctx.restore();
+    }
+
+    function markExtrema(pts, color, label, dir, x0, pw) {
+      if (!pts.length) return;
+
+      // 축까지 내린 점선 가이드
+      sctx.save();
+      sctx.setLineDash([2, 4]);
+      sctx.strokeStyle = color;
+      sctx.globalAlpha = 0.45;
+      sctx.lineWidth = 1;
+      sctx.beginPath();
+      pts.forEach(function (p) {
+        var px = Math.round(p.x) + 0.5;
+        sctx.moveTo(px, p.y); sctx.lineTo(px, y0);
+      });
+      sctx.stroke();
+      sctx.restore();
+
+      pts.forEach(function (p) {
+        sctx.beginPath();
+        sctx.arc(p.x, p.y, 5, 0, TAU);
+        sctx.fillStyle = color;
+        sctx.fill();
+        sctx.strokeStyle = C.panel;
+        sctx.lineWidth = 2;
+        sctx.stroke();
+      });
+
+      // 라벨 혼잡 제어 — 같은 종류 극값 사이 최소 간격 기준
+      var minGap = Infinity;
+      for (var i = 1; i < pts.length; i++) minGap = Math.min(minGap, pts[i].x - pts[i - 1].x);
+
+      var targets;
+      if (minGap >= 78) {
+        targets = pts;
+      } else {
+        var mid = x0 + pw / 2, best = pts[0], bd = Infinity;
+        pts.forEach(function (p) {
+          var dd = Math.abs(p.x - mid);
+          if (dd < bd) { bd = dd; best = p; }
+        });
+        targets = [best];
+      }
+
+      sctx.font = '600 11px ' + KR;
+      sctx.fillStyle = color;
+      sctx.textAlign = 'center';
+      sctx.textBaseline = dir === -1 ? 'bottom' : 'top';
+      var off = dir === -1 ? -10 : 10;
+      targets.forEach(function (p) {
+        if (p.x < x0 + 14 || p.x > x0 + pw - 14) return;
+        sctx.fillText(label, p.x, p.y + off);
+      });
+    }
+  }
+
+  function strokeSeries(arr, n, x0, y0, pw, sy, color, width, dash, alpha) {
+    sctx.save();
+    if (dash) sctx.setLineDash(dash);
+    sctx.globalAlpha = alpha;
+    sctx.strokeStyle = color;
+    sctx.lineWidth = width;
+    sctx.lineJoin = 'round';
+    sctx.lineCap = 'round';
+    sctx.beginPath();
+    for (var i = 0; i <= n; i++) {
+      var px = x0 + (i / n) * pw;
+      var py = y0 - arr[i] * sy;
+      if (i === 0) sctx.moveTo(px, py); else sctx.lineTo(px, py);
+    }
+    sctx.stroke();
+    sctx.restore();
+  }
+
+  /* ---------- phasor ---------- */
+  function drawPhasor() {
+    var w = psize.w, h = psize.h;
+    if (w < 20) return;
+    var cx = w / 2, cy = h / 2;
+    var R = Math.min(w, h) / 2 - 22;
+    var scale = R / yspan;   // 그래프와 같은 축척
+
+    var d1 = derived(W[0]);
+    var th1 = d1.om * S.t + W[0].phi;
+    var p1 = { x: W[0].A * Math.cos(th1), y: W[0].A * Math.sin(th1) };
+
+    var on2 = W[1].on;
+    var d2 = derived(W[1]);
+    var th2 = d2.om * S.t + W[1].phi;
+    var p2 = on2 ? { x: W[1].A * Math.cos(th2), y: W[1].A * Math.sin(th2) } : { x: 0, y: 0 };
+    var sum = { x: p1.x + p2.x, y: p1.y + p2.y };
+
+    function PX(m) { return cx + m.x * scale; }
+    function PY(m) { return cy - m.y * scale; }
+
+    pctx.clearRect(0, 0, w, h);
+    pctx.fillStyle = C.panel;
+    pctx.fillRect(0, 0, w, h);
+
+    // 기준 원 (= 세로 표시 범위)
+    pctx.save();
+    pctx.setLineDash([2, 4]);
+    pctx.strokeStyle = C.gridStrong;
+    pctx.lineWidth = 1;
+    pctx.beginPath();
+    pctx.arc(cx, cy, R, 0, TAU);
+    pctx.stroke();
+    pctx.restore();
+
+    // 축
+    pctx.strokeStyle = C.grid;
+    pctx.lineWidth = 1;
+    pctx.beginPath();
+    pctx.moveTo(cx - R - 8, Math.round(cy) + 0.5); pctx.lineTo(cx + R + 8, Math.round(cy) + 0.5);
+    pctx.moveTo(Math.round(cx) + 0.5, cy - R - 8); pctx.lineTo(Math.round(cx) + 0.5, cy + R + 8);
+    pctx.stroke();
+
+    var vColor = sum.y >= 0 ? C.peak : C.trough;
+
+    // 합 벡터의 세로 그림자
+    pctx.save();
+    pctx.setLineDash([2, 4]);
+    pctx.strokeStyle = vColor;
+    pctx.globalAlpha = 0.6;
+    pctx.lineWidth = 1;
+    pctx.beginPath();
+    pctx.moveTo(PX(sum), PY(sum)); pctx.lineTo(cx, PY(sum));
+    pctx.stroke();
+    pctx.restore();
+
+    pctx.strokeStyle = vColor;
+    pctx.lineWidth = 3;
+    pctx.lineCap = 'round';
+    pctx.beginPath();
+    pctx.moveTo(cx, cy); pctx.lineTo(cx, PY(sum));
+    pctx.stroke();
+
+    // 벡터 — 머리-꼬리 합성
+    if (on2) {
+      arrow(cx, cy, PX(p1), PY(p1), C.w1, 1.8);
+      arrow(PX(p1), PY(p1), PX(sum), PY(sum), C.w2, 1.8);
+      pctx.beginPath();
+      pctx.arc(PX(p1), PY(p1), 3, 0, TAU);
+      pctx.fillStyle = C.w1;
+      pctx.fill();
+    }
+    arrow(cx, cy, PX(sum), PY(sum), C.trace, 2.4);
+
+    pctx.beginPath();
+    pctx.arc(PX(sum), PY(sum), 4.5, 0, TAU);
+    pctx.fillStyle = C.trace;
+    pctx.fill();
+    pctx.strokeStyle = C.panel;
+    pctx.lineWidth = 2;
+    pctx.stroke();
+
+    // 범위 라벨
+    pctx.font = '10px ' + MONO;
+    pctx.fillStyle = C.muted;
+    pctx.textAlign = 'left';
+    pctx.textBaseline = 'middle';
+    pctx.fillText('+' + yspan.toFixed(1), cx + 6, cy - R - 1);
+    pctx.fillText('−' + yspan.toFixed(1), cx + 6, cy + R + 1);
+
+    function arrow(ax, ay, bx, by, color, width) {
+      pctx.strokeStyle = color;
+      pctx.lineWidth = width;
+      pctx.lineCap = 'round';
+      pctx.beginPath();
+      pctx.moveTo(ax, ay); pctx.lineTo(bx, by);
+      pctx.stroke();
+    }
+  }
+
+  /* ---------- readouts ---------- */
+  function fmt(n, p) { return n.toFixed(p === undefined ? 2 : p); }
+  function txt(id, v) { document.getElementById(id).textContent = v; }
+
+  var stateEl = document.getElementById('r-state');
+  var stateDetailEl = document.getElementById('r-state-detail');
+  var row2 = document.getElementById('row-2');
+
+  function updateReadouts() {
+    var d1 = derived(W[0]), d2 = derived(W[1]);
+    var th1 = d1.om * S.t + W[0].phi;
+    var th2 = d2.om * S.t + W[1].phi;
+    var y0 = W[0].A * Math.sin(th1) + (W[1].on ? W[1].A * Math.sin(th2) : 0);
+
+    document.getElementById('r-t').innerHTML = fmt(S.t) + '<small>s</small>';
+    document.getElementById('r-y').innerHTML = fmt(y0) + '<small>m</small>';
+
+    var st = classify();
+    stateEl.textContent = st.label;
+    stateEl.className = 'badge ' + st.tone;
+    stateDetailEl.textContent = st.detail;
+
+    fillRow('w1', d1, W[0]);
+    fillRow('w2', d2, W[1]);
+    row2.classList.toggle('is-off', !W[1].on);
+
+    var wrap = function (v) { return ((v % TAU) + TAU) % TAU; };
+    txt('p-th1', 'θ₁ ' + fmt(wrap(th1)));
+    txt('p-th2', W[1].on ? 'θ₂ ' + fmt(wrap(th2)) : 'θ₂ —');
+    txt('p-proj', fmt(y0) + ' m');
+  }
+
+  function fillRow(prefix, d, w) {
+    txt(prefix + '-om', fmt(d.om));
+    txt(prefix + '-T', fmt(d.T));
+    txt(prefix + '-lam', fmt(d.lam));
+    txt(prefix + '-k', fmt(d.k));
+    txt(prefix + '-dir', w.dir > 0 ? '→' : '←');
+  }
+
+  function phaseText(phi) {
+    var pi = phi / Math.PI;
+    return (pi < 0 ? '−' : '+') + fmt(Math.abs(pi)) + 'π';
+  }
+
+  function updateControlLabels() {
+    document.getElementById('v-a1').innerHTML = fmt(W[0].A) + '<small>m</small>';
+    document.getElementById('v-f1').innerHTML = fmt(W[0].f) + '<small>Hz</small>';
+    document.getElementById('v-p1').innerHTML = phaseText(W[0].phi) + '<small>rad</small>';
+    document.getElementById('v-a2').innerHTML = fmt(W[1].A) + '<small>m</small>';
+    document.getElementById('v-f2').innerHTML = fmt(W[1].f) + '<small>Hz</small>';
+    document.getElementById('v-p2').innerHTML = phaseText(W[1].phi) + '<small>rad</small>';
+  }
+
+  function render() {
+    drawScope();
+    drawPhasor();
+    updateReadouts();
+  }
+
+  /* ---------- animation ---------- */
+  var last = 0;
+  function frame(now) {
+    if (!last) last = now;
+    var dt = Math.min((now - last) / 1000, 0.05);
+    last = now;
+    if (S.playing) {
+      S.t += dt * S.speed;
+      if (S.t > 1e6) S.t = 0;
+    }
+    render();
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- wiring ---------- */
+  var el = {
+    a1: document.getElementById('a1'), f1: document.getElementById('f1'), p1: document.getElementById('p1'),
+    a2: document.getElementById('a2'), f2: document.getElementById('f2'), p2: document.getElementById('p2'),
+    w2on: document.getElementById('w2on'),
+    marks: document.getElementById('marks'),
+    play: document.getElementById('play'),
+    reset: document.getElementById('reset'),
+    panel2: document.getElementById('panel-2'),
+    body2: document.getElementById('w2-body')
+  };
+
+  var dirBtns = document.querySelectorAll('#dir2 button');
+  var speedBtns = document.querySelectorAll('#speed button');
+
+  function syncFromInputs() {
+    W[0].A = parseFloat(el.a1.value);
+    W[0].f = parseFloat(el.f1.value);
+    W[0].phi = parseFloat(el.p1.value) * Math.PI;
+    W[1].A = parseFloat(el.a2.value);
+    W[1].f = parseFloat(el.f2.value);
+    W[1].phi = parseFloat(el.p2.value) * Math.PI;
+    W[1].on = el.w2on.checked;
+    S.marks = el.marks.checked;
+
+    yspan = pickYspan();   // 재생 중 축이 흔들리지 않도록 여기서만 갱신
+    updateControlLabels();
+    applyW2Enabled();
+    if (!S.playing) render();
+  }
+
+  function applyW2Enabled() {
+    var off = !W[1].on;
+    el.panel2.classList.toggle('is-off', off);
+    [el.a2, el.f2, el.p2].forEach(function (x) { x.disabled = off; });
+    Array.prototype.forEach.call(dirBtns, function (b) { b.disabled = off; });
+  }
+
+  [el.a1, el.f1, el.p1, el.a2, el.f2, el.p2].forEach(function (x) {
+    x.addEventListener('input', syncFromInputs);
+  });
+  el.w2on.addEventListener('change', syncFromInputs);
+  el.marks.addEventListener('change', syncFromInputs);
+
+  Array.prototype.forEach.call(dirBtns, function (b) {
+    b.addEventListener('click', function () {
+      W[1].dir = parseInt(b.dataset.dir, 10);
+      Array.prototype.forEach.call(dirBtns, function (o) {
+        o.setAttribute('aria-pressed', o === b ? 'true' : 'false');
+      });
+      if (!S.playing) render();
+    });
+  });
+
+  Array.prototype.forEach.call(speedBtns, function (b) {
+    b.addEventListener('click', function () {
+      S.speed = parseFloat(b.dataset.speed);
+      Array.prototype.forEach.call(speedBtns, function (o) {
+        o.setAttribute('aria-pressed', o === b ? 'true' : 'false');
+      });
+    });
+  });
+
+  function setPlaying(on) {
+    S.playing = on;
+    el.play.textContent = on ? '⏸ 일시정지' : '▶ 재생';
+    el.play.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+
+  el.play.addEventListener('click', function () { setPlaying(!S.playing); });
+
+  el.reset.addEventListener('click', function () {
+    el.a1.value = DEFAULTS[0].A; el.f1.value = DEFAULTS[0].f; el.p1.value = 0;
+    el.a2.value = DEFAULTS[1].A; el.f2.value = DEFAULTS[1].f; el.p2.value = 0;
+    el.w2on.checked = true;
+    el.marks.checked = true;
+    W[1].dir = 1;
+    Array.prototype.forEach.call(dirBtns, function (o) {
+      o.setAttribute('aria-pressed', o.dataset.dir === '1' ? 'true' : 'false');
+    });
+    S.t = 0;
+    syncFromInputs();
+    render();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.code !== 'Space') return;
+    var tag = (e.target.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'button' || tag === 'select' || tag === 'textarea') return;
+    e.preventDefault();
+    setPlaying(!S.playing);
+  });
+
+  reduce.addEventListener('change', function (e) { if (e.matches) setPlaying(false); });
+
+  /* ---------- boot ---------- */
+  fitAll();
+  syncFromInputs();
+  setPlaying(S.playing);
+  render();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(render);
+  requestAnimationFrame(frame);
+})();
+</script>
